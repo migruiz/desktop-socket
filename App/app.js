@@ -1,30 +1,27 @@
-const { of, Observable, } = require('rxjs');
-const { mapTo,delay,concatMap, startWith} = require('rxjs/operators');
-
-const CronJob = require('cron').CronJob;
+const { Observable, } = require('rxjs');
+const {filter} = require('rxjs/operators');
 var mqtt = require('./mqttCluster.js');
 
 global.mtqqLocalPath = process.env.MQTTLOCAL;
-const nightTimeTariffStream = () =>  new Observable(subscriber => {  
-    
-    new CronJob(
-        '0 24 * * *',
-       function() {
-           subscriber.next();
-       },
-       null,
-       true,
-       'Europe/London'
-   );
-});
+global.mtqqLocalPath = 'mqtt://192.168.0.11';
 
-nightTimeTariffStream().pipe(
- concatMap(v => of(v).pipe(
-     delay(9 * 60 * 60  * 1000),
-     mapTo("off"),
-     startWith("on")
-     ))
-).subscribe(async m => {
-    console.log('bathroom/master/state', m);
-    (await mqtt.getClusterAsync()).publishMessage('bathroom/master/switch/state',m)
-})
+const remoteStream = new Observable(async subscriber => {  
+    var mqttCluster=await mqtt.getClusterAsync()   
+    mqttCluster.subscribeData('zigbee2mqtt/0x84ba20fffed40589', function(content){   
+            subscriber.next(content)
+    });
+  });
+
+  const onStream = remoteStream.pipe(
+    filter( m => m.action==='on')
+  )
+  const offStream = remoteStream.pipe(
+    filter( m => m.action==='brightness_move_up')
+  )
+
+  onStream.subscribe(async m => {
+    (await mqtt.getClusterAsync()).publishMessage('zigbee2mqtt/0x0c4314fffe20d4f8/set',JSON.stringify({state:'ON'}));    
+  })
+  offStream.subscribe(async m => {
+    (await mqtt.getClusterAsync()).publishMessage('zigbee2mqtt/0x0c4314fffe20d4f8/set',JSON.stringify({state:'OFF'}));    
+  })
