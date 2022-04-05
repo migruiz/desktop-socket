@@ -1,0 +1,2 @@
+30 2 * * * /usr/local/bin/node /App/app.js > /proc/1/fd/1 2>/proc/1/fd/2
+# An empty line is required at the end of this file for a valid cron file.
