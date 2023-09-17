@@ -7,7 +7,7 @@ global.mtqqLocalPath = 'mqtt://192.168.0.11';
 
 const remoteStream = new Observable(async subscriber => {  
     var mqttCluster=await mqtt.getClusterAsync()   
-    mqttCluster.subscribeData('zigbee2mqtt/0x84ba20fffed40589', function(content){   
+    mqttCluster.subscribeData('zigbee2mqtt/0x84ba20fffecacbc4', function(content){   
             subscriber.next(content)
     });
   });
@@ -20,8 +20,8 @@ const remoteStream = new Observable(async subscriber => {
   )
 
   onStream.subscribe(async m => {
-    (await mqtt.getClusterAsync()).publishMessage('zigbee2mqtt/0x0c4314fffe20d4f8/set',JSON.stringify({state:'ON'}));    
+    (await mqtt.getClusterAsync()).publishMessage('zigbee2mqtt/0xa4c138b23751a6d9/set',JSON.stringify({state:'ON'}));    
   })
   offStream.subscribe(async m => {
-    (await mqtt.getClusterAsync()).publishMessage('zigbee2mqtt/0x0c4314fffe20d4f8/set',JSON.stringify({state:'OFF'}));    
+    (await mqtt.getClusterAsync()).publishMessage('zigbee2mqtt/0xa4c138b23751a6d9/set',JSON.stringify({state:'OFF'}));    
   })
