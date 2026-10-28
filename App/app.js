@@ -5,9 +5,12 @@ var mqtt = require('./mqttCluster.js');
 global.mtqqLocalPath = process.env.MQTTLOCAL;
 global.mtqqLocalPath = 'mqtt://192.168.0.11';
 
-const remoteStream = new Observable(async subscriber => {  
-    var mqttCluster=await mqtt.getClusterAsync()   
-    mqttCluster.subscribeData('zigbee2mqtt/0x84ba20fffecacbc4', function(content){   
+// IKEA BILRESA two-button remote (E2489), since 28/10/2026, in place of the TRADFRI shortcut
+// button 0x84ba20fffecacbc4 (press for on, hold for off). Press I: socket on. Press O: socket
+// off. Holding a button (brightness_move_up/down, then brightness_stop) does nothing.
+const remoteStream = new Observable(async subscriber => {
+    var mqttCluster=await mqtt.getClusterAsync()
+    mqttCluster.subscribeData('zigbee2mqtt/0x1035970000b17d39', function(content){
             subscriber.next(content)
     });
   });
@@ -19,7 +22,7 @@ const remoteStream = new Observable(async subscriber => {
     mapTo("on")
   )
   const offStream = sharedStream.pipe(
-    filter( m => m.action==='brightness_move_up' || m.action==='brightness_stop'),
+    filter( m => m.action==='off'),
     mapTo("off")
   )
 
